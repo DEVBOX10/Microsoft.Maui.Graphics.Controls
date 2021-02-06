@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Graphics;
 using System.Runtime.CompilerServices;
 using GraphicsControls.Extensions;
@@ -13,6 +14,13 @@ namespace GraphicsControls
 
     public partial class Editor : GraphicsVisualView, IInput
     {
+        public static class Layers
+        {
+            public const string Background = "Editor.Layers.Background";
+            public const string Border = "Editor.Layers.Border";
+            public const string Placeholder = "Editor.Layers.Placeholder";
+        }
+
         readonly BorderlessEditor _editor;
 
         public Editor()
@@ -87,6 +95,13 @@ namespace GraphicsControls
             set { SetValue(PlaceholderColorProperty, value); }
         }
 
+        public List<string> EditorLayers = new List<string>
+        {
+            Layers.Background,
+            Layers.Border,
+            Layers.Placeholder
+        };
+
         public override void Load()
         {
             base.Load();
@@ -124,6 +139,25 @@ namespace GraphicsControls
             _editor.TextChanged -= OnEditorTextChanged;
             _editor.Focused -= OnEditorFocused;
             _editor.Unfocused -= OnEditorUnfocused;
+        }
+
+        public override List<string> GraphicsLayers =>
+            EditorLayers;
+
+        public override void DrawLayer(string layer, ICanvas canvas, RectangleF dirtyRect)
+        {
+            switch (layer)
+            {
+                case Layers.Background:
+                    DrawEditorBackground(canvas, dirtyRect);
+                    break;
+                case Layers.Border:
+                    DrawEditorBorder(canvas, dirtyRect);
+                    break;
+                case Layers.Placeholder:
+                    DrawEntryPlaceholder(canvas, dirtyRect);
+                    break;
+            }
         }
 
         public override void Draw(ICanvas canvas, RectangleF dirtyRect)
